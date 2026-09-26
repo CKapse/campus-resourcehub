@@ -1,0 +1,92 @@
+name: Campus ResourceHub CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+  test:
+    name: Test
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+  build:
+    name: Docker Build and Smoke Test
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --build-arg GIT_SHA=${{ github.sha }} \
+            -t campus-resourcehub:${{ github.sha }} .
+
+      - name: Start container
+        run: |
+          docker run -d \
+            --name campus-resourcehub \
+            -p 3000:3000 \
+            campus-resourcehub:${{ github.sha }}
+
+      - name: Wait for application
+        run: sleep 5
+
+      - name: Health check
+        run: curl --fail http://localhost:3000/health
+
+      - name: Stop container
+        if: always()
+        run: docker stop campus-resourcehub || true
+
+  deploy:
+    name: Deploy to Render
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deployment
+        run: |
+          curl --fail --silent --show-error \
+            -X POST \
+            "${{ secrets.RENDER_DEPLOY_HOOK_URL }}&ref=${{ github.sha }}"

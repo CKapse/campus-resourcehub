@@ -1,0 +1,27 @@
+{
+  "name": "campus-resourcehub",
+  "version": "1.0.0",
+  "description": "Student Resource Request and Allocation System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test",
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "campus",
+    "resource",
+    "management",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "globals": "^15.0.0"
+  }
+}

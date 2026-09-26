@@ -20,7 +20,7 @@ test('health endpoint returns ok', async () => {
   const response = await fetch(`${baseUrl}/health`);
   assert.equal(response.status, 200);
   const data = await response.json();
-  assert.equal(data.status, 'FAIL');
+  assert.equal(data.status, 'ok');
 });
 
 test('valid resource request is accepted', async () => {

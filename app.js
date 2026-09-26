@@ -25,8 +25,8 @@ const statuses = [
 ];
 
 const commit = (
-  process.env.GIT_SHA ||
   process.env.RENDER_GIT_COMMIT ||
+  process.env.GIT_SHA ||
   'local'
 ).slice(0, 7);
 
